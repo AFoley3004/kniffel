@@ -1,12 +1,22 @@
 #! python3
 
 import random as rd
-import copy
 import tabulate
 
 
 def clear():
     print ("\n" * 50)
+    
+
+def checkint(intinput):
+    while True:
+        try:
+            intinput = int(intinput)
+            break
+        except:
+            print("Only choose integer values!")
+            intinput = input()
+    return intinput
 
 def roll(old):
     for i in range(5 - len(old)):
@@ -17,9 +27,10 @@ def roll(old):
 
 
 def show(numbers):
+    pr = []
     for i in range(len(numbers)):
-        numbers[i] = str(numbers[i])
-    num = ", ".join(numbers)
+        pr.append(str(numbers[i]))
+    num = ", ".join(pr)
     print("Your current numbers are: " + num + "\n")
 
 
@@ -28,38 +39,39 @@ def choose(allnumbers):
     "If you want to keep every number type 'all'.\n"
     "If you don't want to keep any additional numbers press 'Enter' without a value."
     )
+    a , n = False, False
     stays = []
-    q = 0
     keep = input()
     if keep == "":
-        q = 2
+        n = True
     elif keep.lower() == "all":
         stays = allnumbers
-        q = 1
+        a = True
     else:
-        while True:
-            try:
-                int(keep)
-                break
-            except:
-                print("Only choose integer values!")
-                keep = input()
+        keep = str(checkint(keep))
         keep = list(keep)
-        for i in keep:
-            if i in allnumbers:
-                if allnumbers.count(i) > stays.count(i):            #hier fehlt noch Fehlererkennung
-                    stays.append(int(i))
-                else:
-                    print("You can't take those values.")
+        j = 0
+        while True:
+            p = int(keep[j])
+            if allnumbers.count(p) > stays.count(p):
+                stays.append(p)
+                j += 1
             else:
-                print("You can only take numbers you already rolled.\n")
-    if q == 0:
+                print("You can't take those values.")
+                stays = []
+                j = 0
+                keep = input("Enter new numbers:\n")
+                keep = str(checkint(keep))
+                keep = list(keep)
+            if len(stays)  == len(keep):
+                break
+    if not n:
         show(stays)
-    return stays, q
+    return stays, a
 
 
 def turn(name):
-    allrolls = []
+    allrolls = []               
     clear()
     for i in range(3):
         if i == 0:
@@ -71,15 +83,9 @@ def turn(name):
         input("Press 'Enter' to roll!\n")
         allrolls = roll(allrolls)
         if i < 2:
-            allrolls, q = choose(allrolls)
-        if q == 1:
+            allrolls, a = choose(allrolls)
+        if a:
             break
-
-    print("\nThose are " + name + "'s final numbers:")
-    for i in range(len(allrolls)):
-        allrolls[i] = str(allrolls[i])
-    num = ", ".join(allrolls)
-    print(num + "\n")
     return allrolls
 
 
@@ -102,9 +108,6 @@ def points(a, thisdict):
                 take = input()
 
         if thisdict[take] == False:
-
-            for z in range(5):
-                a[z] = int(a[z])
 
             if take == "1er":
                 c = a.count(1)
@@ -234,22 +237,10 @@ onelist = {
 
 while True:
     players = input("Choose the number of players:\n")
-    while True:
-        try:
-            players = int(players)
-            break
-        except:
-            print("Only use positive integers.")
-            players = input("Choose the number of players:\n")
+    players = checkint(players)
 
     rounds = input("Choose the number of rounds: (13 are a full game)\n")
-    while True:
-        try:
-            rounds = int(rounds)
-            break
-        except:
-            print("Only use positive integers.")
-            rounds = input("Choose the number of rounds: (13 are a full game)\n")
+    rounds = checkint(rounds)
 
     kniffelllist = []
     namelist = []
@@ -260,16 +251,16 @@ while True:
         namelist.append(name)
 
 
-
     for i in range(players):
-        kniffelllist.append(copy.deepcopy(onelist))
+        kniffelllist.append(onelist.copy())
 
 
-
+###procedure game 
     for i in range(rounds):
         for j in range(players):
             m = turn(namelist[j])
             kniffelllist[j] = points(m, kniffelllist[j])
+###
 
     for i in range(players):
         b = [countpoints(kniffelllist[i]), namelist[i]]
@@ -309,15 +300,16 @@ To-dos:
 - wenn feld gestrichen darf es später nicht nochmal verwendet werden X
 
 optional:
-- eine Anzeige wie die Punkte je nach Wüfelfeld verteilt werden
-- Anzeige wie viele Punkte schon auf den Würfelfeldern liegen
-- beide Anzeigen zu einer Tabelle kombinieren, die bei points angezeigt wird
-- verwende listen innerhalb des dict, um die zusätzliche namensliste zu erübrigen
+    GUI:
+    - eine Anzeige wie die Punkte je nach Wüfelfeld verteilt werden
+    - Anzeige wie viele Punkte schon auf den Würfelfeldern liegen
+    - beide Anzeigen zu einer Tabelle kombinieren, die bei points angezeigt wird
 - Mögllichkeiten alle Würfel zu behalten X
 - Möglichkeit alle zu behaltenden Würfel in eine Zeile einzugeben X
 - Ergebnisse werden automatisch in csv datei gespeichert
 - Wieso zum Fick werden die int in meinen list immer wieder zu str
 (Problem tritt bei points auf)
-- viel Bugs suchen
+- viel Bugs fixing
+- ersetze copy.deepcopy durch list.copy() X
 
 """
